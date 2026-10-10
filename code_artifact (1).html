@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>繽紛便利貼小幫手</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Caveat:wght@600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        .note-font {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        /* Custom sticky note pin and shadow effect */
+        .sticky-note {
+            transition: all 0.25s ease;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+        .sticky-note:hover {
+            transform: translateY(-4px) rotate(1deg);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .pin {
+            width: 16px;
+            height: 16px;
+            background: radial-gradient(circle at 30% 30%, #ff5e5e, #c0392b);
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset -1px -1px 2px rgba(0,0,0,0.4);
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 min-h-screen text-slate-800 flex flex-col">
+
+    <header class="bg-white/80 backdrop-blur-md shadow-sm border-b border-purple-100 sticky top-0 z-30">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-300 flex items-center justify-center shadow-md text-amber-900 font-bold text-xl">
+                    <i class="fa-solid fa-note-sticky"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">繽紛便利貼</h1>
+                    <p class="text-xs text-slate-500">記錄靈感、待辦事項與生活點滴</p>
+                </div>
+            </div>
+            <!-- Search & Stats -->
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <div class="relative flex-1 sm:w-64">
+                    <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" id="searchInput" placeholder="搜尋便利貼內容..." 
+                           class="w-full pl-9 pr-4 py-2 rounded-full border border-slate-200 bg-slate-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:bg-white transition-all">
+                </div>
+                <div class="text-xs bg-purple-100 text-purple-700 px-3 py-1.5 rounded-full font-medium whitespace-nowrap">
+                    共 <span id="noteCount">0</span> 張便利貼
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8 flex flex-col gap-8">
+        <!-- Control Bar: Create New Note -->
+        <section class="bg-white/90 backdrop-blur rounded-2xl p-6 shadow-sm border border-purple-100 flex flex-col gap-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h2 class="text-lg font-bold text-slate-700 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-plus text-purple-500"></i> 新增便利貼
+                </h2>
+                <!-- Color Palette Selector -->
+                <div class="flex items-center gap-2" id="colorPalette">
+                    <span class="text-xs text-slate-500 mr-1 font-medium">選擇顏色：</span>
+                    <button data-color="yellow" class="w-7 h-7 rounded-full bg-amber-200 border-2 border-amber-400 ring-offset-2 focus:ring-2 ring-amber-400 transition-transform hover:scale-110 active:scale-95 shadow-sm"></button>
+                    <button data-color="pink" class="w-7 h-7 rounded-full bg-rose-200 border-2 border-transparent hover:border-rose-400 transition-transform hover:scale-110 active:scale-95 shadow-sm"></button>
+                    <button data-color="blue" class="w-7 h-7 rounded-full bg-sky-200 border-2 border-transparent hover:border-sky-400 transition-transform hover:scale-110 active:scale-95 shadow-sm"></button>
+                    <button data-color="green" class="w-7 h-7 rounded-full bg-emerald-200 border-2 border-transparent hover:border-emerald-400 transition-transform hover:scale-110 active:scale-95 shadow-sm"></button>
+                    <button data-color="purple" class="w-7 h-7 rounded-full bg-purple-200 border-2 border-transparent hover:border-purple-400 transition-transform hover:scale-110 active:scale-95 shadow-sm"></button>
+                </div>
+            </div>
+
+            <!-- Note Input Form -->
+            <div class="flex flex-col gap-3">
+                <input type="text" id="noteTitleInput" placeholder="標題（選填）..." 
+                       class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-400 bg-slate-50/50 transition-all">
+                <textarea id="noteContentInput" placeholder="在這裡輸入便利貼內容（支援貼上文字）..." rows="3"
+                          class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-slate-50/50 transition-all resize-none"></textarea>
+                <div class="flex justify-end">
+                    <button id="addNoteBtn" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 active:scale-95">
+                        <i class="fa-solid fa-plus"></i> 建立便利貼
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div id="notesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Notes will be dynamically inserted here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-center">
+                <div class="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center text-purple-400 text-3xl mb-4">
+                    <i class="fa-solid fa-feather"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-700 mb-1">目前沒有便利貼</h3>
+                <p class="text-sm text-slate-500 max-w-sm">試著在上方建立第一張便利貼，記錄你的美好想法吧！</p>
+            </div>
+        </section>
+    </main>
+
+    <div id="customModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-purple-100 flex flex-col gap-4 transform scale-95 transition-transform" id="modalContainer">
+            <div class="flex items-center gap-3">
+                <div id="modalIcon" class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <h3 id="modalTitle" class="font-bold text-slate-800">確認刪除</h3>
+                    <p id="modalDesc" class="text-xs text-slate-500">你確定要刪除這張便利貼嗎？此動作無法復原。</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-2">
+                <button id="modalCancelBtn" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">取消</button>
+                <button id="modalConfirmBtn" class="px-4 py-2 rounded-xl text-sm font-medium bg-rose-600 hover:bg-rose-700 text-white shadow-md transition-all">確認刪除</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Color configuration mapping
+        const colorThemes = {
+            yellow: {
+                bg: 'bg-amber-100',
+                border: 'border-amber-300',
+                text: 'text-amber-900',
+                title: 'text-amber-950',
+                date: 'text-amber-700/70',
+                btnHover: 'hover:bg-amber-200',
+                ring: 'ring-amber-400'
+            },
+            pink: {
+                bg: 'bg-rose-100',
+                border: 'border-rose-300',
+                text: 'text-rose-900',
+                title: 'text-rose-950',
+                date: 'text-rose-700/70',
+                btnHover: 'hover:bg-rose-200',
+                ring: 'ring-rose-400'
+            },
+            blue: {
+                bg: 'bg-sky-100',
+                border: 'border-sky-300',
+                text: 'text-sky-900',
+                title: 'text-sky-950',
+                date: 'text-sky-700/70',
+                btnHover: 'hover:bg-sky-200',
+                ring: 'ring-sky-400'
+            },
+            green: {
+                bg: 'bg-emerald-100',
+                border: 'border-emerald-300',
+                text: 'text-emerald-900',
+                title: 'text-emerald-950',
+                date: 'text-emerald-700/70',
+                btnHover: 'hover:bg-emerald-200',
+                ring: 'ring-emerald-400'
+            },
+            purple: {
+                bg: 'bg-purple-100',
+                border: 'border-purple-300',
+                text: 'text-purple-900',
+                title: 'text-purple-950',
+                date: 'text-purple-700/70',
+                btnHover: 'hover:bg-purple-200',
+                ring: 'ring-purple-400'
+            }
+        };
+
+        // State variables
+        let notes = [];
+        let selectedColor = 'yellow';
+        let searchQuery = '';
+        let pendingDeleteId = null;
+
+        // DOM elements
+        const notesGrid = document.getElementById('notesGrid');
+        const emptyState = document.getElementById('emptyState');
+        const noteCount = document.getElementById('noteCount');
+        const noteTitleInput = document.getElementById('noteTitleInput');
+        const noteContentInput = document.getElementById('noteContentInput');
+        const addNoteBtn = document.getElementById('addNoteBtn');
+        const searchInput = document.getElementById('searchInput');
+        const colorPalette = document.getElementById('colorPalette');
+
+        // Modal elements
+        const customModal = document.getElementById('customModal');
+        const modalContainer = document.getElementById('modalContainer');
+        const modalCancelBtn = document.getElementById('modalCancelBtn');
+        const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+
+        function initApp() {
+            // Load notes from localStorage
+            try {
+                const savedNotes = localStorage.getItem('sticky_notes_app_data');
+                if (savedNotes) {
+                    notes = JSON.parse(savedNotes);
+                } else {
+                    // Default sample note
+                    notes = [
+                        {
+                            id: 'note-' + Date.now(),
+                            title: '歡迎使用繽紛便利貼！ 🎉',
+                            content: '1. 可隨時切換不同顏色的便利貼\n2. 點擊文字直接修改內容\n3. 支援文字貼上與 LocalStorage 自動儲存',
+                            color: 'yellow',
+                            updatedAt: new Date().toLocaleString()
+                        }
+                    ];
+                    saveNotes();
+                }
+            } catch (e) {
+                console.error('Failed to load from storage', e);
+                notes = [];
+            }
+
+            renderNotes();
+            setupEventListeners();
+        }
+
+        function saveNotes() {
+            try {
+                localStorage.setItem('sticky_notes_app_data', JSON.stringify(notes));
+            } catch (e) {
+                console.error('Failed to save to storage', e);
+            }
+        }
+
+        function setupEventListeners() {
+            // Color picker buttons
+            colorPalette.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    colorPalette.querySelectorAll('button').forEach(b => {
+                        b.classList.remove('border-amber-400', 'border-rose-400', 'border-sky-400', 'border-emerald-400', 'border-purple-400');
+                        b.classList.add('border-transparent');
+                    });
+                    const color = btn.getAttribute('data-color');
+                    selectedColor = color;
+                    btn.classList.remove('border-transparent');
+                    const borderColors = { yellow: 'border-amber-400', pink: 'border-rose-400', blue: 'border-sky-400', green: 'border-emerald-400', purple: 'border-purple-400' };
+                    btn.classList.add(borderColors[color] || 'border-slate-400');
+                });
+            });
+
+            // Add note button
+            addNoteBtn.addEventListener('click', handleAddNote);
+
+            // Enter key shortcut in title input
+            noteTitleInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    noteContentInput.focus();
+                }
+            });
+
+            // Search input handler
+            searchInput.addEventListener('input', (e) => {
+                searchQuery = e.target.value.trim().toLowerCase();
+                renderNotes();
+            });
+
+            // Modal actions
+            modalCancelBtn.addEventListener('click', closeModal);
+            modalConfirmBtn.addEventListener('click', () => {
+                if (pendingDeleteId) {
+                    notes = notes.filter(n => n.id !== pendingDeleteId);
+                    saveNotes();
+                    renderNotes();
+                    closeModal();
+                }
+            });
+
+            customModal.addEventListener('click', (e) => {
+                if (e.target === customModal) closeModal();
+            });
+        }
+
+        function handleAddNote() {
+            const title = noteTitleInput.value.trim();
+            const content = noteContentInput.value.trim();
+
+            if (!content && !title) {
+                noteContentInput.classList.add('ring-2', 'ring-rose-400');
+                setTimeout(() => noteContentInput.classList.remove('ring-2', 'ring-rose-400'), 500);
+                return;
+            }
+
+            const newNote = {
+                id: 'note-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+                title: title,
+                content: content,
+                color: selectedColor,
+                updatedAt: new Date().toLocaleDateString('zh-TW', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            };
+
+            notes.unshift(newNote);
+            saveNotes();
+
+            // Reset inputs
+            noteTitleInput.value = '';
+            noteContentInput.value = '';
+            renderNotes();
+        }
+
+        function renderNotes() {
+            const filteredNotes = notes.filter(note => {
+                const matchTitle = note.title.toLowerCase().includes(searchQuery);
+                const matchContent = note.content.toLowerCase().includes(searchQuery);
+                return matchTitle || matchContent;
+            });
+
+            noteCount.textContent = notes.length;
+
+            if (filteredNotes.length === 0) {
+                notesGrid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            notesGrid.innerHTML = '';
+
+            filteredNotes.forEach(note => {
+                const theme = colorThemes[note.color] || colorThemes.yellow;
+                const card = document.createElement('div');
+                card.className = `sticky-note relative p-5 rounded-2xl border ${theme.bg} ${theme.border} flex flex-col justify-between min-h-[220px] group`;
+                
+                card.innerHTML = `
+                    <div class="pin"></div>
+                    <div class="flex flex-col gap-2 flex-1 pt-1">
+                        <input type="text" value="${escapeHtml(note.title)}" placeholder="輸入標題..." 
+                               class="note-title-edit w-full bg-transparent font-bold ${theme.title} text-base focus:outline-none focus:bg-white/50 px-1 rounded transition-colors"
+                               data-id="${note.id}">
+                        <textarea placeholder="輸入內容..." 
+                                  class="note-content-edit w-full bg-transparent ${theme.text} text-sm focus:outline-none focus:bg-white/50 p-1 rounded transition-colors resize-none flex-1 leading-relaxed"
+                                  data-id="${note.id}">${escapeHtml(note.content)}</textarea>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 mt-3 border-t border-black/5 text-xs ${theme.date}">
+                        <span>${note.updatedAt}</span>
+                        <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                            <button class="delete-btn p-1.5 rounded-lg hover:bg-rose-500 hover:text-white transition-colors text-slate-600" title="刪除便利貼" data-id="${note.id}">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Live editing listeners
+                const titleInput = card.querySelector('.note-title-edit');
+                const contentInput = card.querySelector('.note-content-edit');
+                const deleteBtn = card.querySelector('.delete-btn');
+
+                titleInput.addEventListener('input', (e) => {
+                    updateNoteField(note.id, 'title', e.target.value);
+                });
+
+                contentInput.addEventListener('input', (e) => {
+                    updateNoteField(note.id, 'content', e.target.value);
+                    contentInput.style.height = 'auto';
+                    contentInput.style.height = contentInput.scrollHeight + 'px';
+                });
+
+                setTimeout(() => {
+                    contentInput.style.height = 'auto';
+                    contentInput.style.height = contentInput.scrollHeight + 'px';
+                }, 0);
+
+                deleteBtn.addEventListener('click', () => {
+                    openModal(note.id);
+                });
+
+                notesGrid.appendChild(card);
+            });
+        }
+
+        function updateNoteField(id, field, value) {
+            const note = notes.find(n => n.id === id);
+            if (note) {
+                note[field] = value;
+                note.updatedAt = new Date().toLocaleDateString('zh-TW', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                saveNotes();
+            }
+        }
+
+        function openModal(id) {
+            pendingDeleteId = id;
+            customModal.classList.remove('hidden');
+            setTimeout(() => modalContainer.classList.remove('scale-95'), 10);
+        }
+
+        function closeModal() {
+            modalContainer.classList.add('scale-95');
+            setTimeout(() => {
+                customModal.classList.add('hidden');
+                pendingDeleteId = null;
+            }, 150);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Run app on load
+        window.onload = initApp;
+    </script>
+</body>
+</html>
